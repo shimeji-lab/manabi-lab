@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="食塩水ラボ">
+<meta name="theme-color" content="#16324F">
+<title>食塩水ラボ</title>
+<style>
+  :root{
+    --ink:#16324F;
+    --ink-soft:#5C7996;
+    --paper:#F7FAFC;
+    --grid:#DFE9F1;
+    --line:#C6D6E3;
+    --amber:#E0982C;
+    --amber-soft:#FBEED6;
+    --card:#FFFFFF;
+    --mono: ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+    --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  button{touch-action:manipulation; min-height:44px}
+  body{
+    margin:0;
+    padding:16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    -webkit-tap-highlight-color:transparent;
+    font-family:var(--gothic);
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+  .app{max-width:860px; margin:0 auto}
+  .back{display:inline-block; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-bottom:8px}
+  .back:hover{color:var(--ink); text-decoration:underline}
+  footer{margin-top:18px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono); text-align:right}
+
+  header{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+  h1{
+    font-size:25.5px; margin:0; letter-spacing:.08em; font-weight:700;
+  }
+  h1 span{display:block; font-family:var(--mono); font-size:11.5px; letter-spacing:.24em; color:var(--ink-soft); font-weight:400; margin-top:4px}
+
+  .modes{display:flex; border:1.5px solid var(--ink); border-radius:2px; overflow:hidden}
+  .mode-btn{
+    font-family:var(--gothic); font-size:15px; padding:8px 18px;
+    border:0; background:transparent; color:var(--ink); cursor:pointer;
+  }
+  .mode-btn + .mode-btn{border-left:1.5px solid var(--ink)}
+  .mode-btn.is-on{background:var(--ink); color:#fff}
+
+  .stage{background:var(--card); border:1.5px solid var(--ink); border-radius:3px; padding:10px 8px 6px}
+  svg{display:block; width:100%; height:auto}
+  .stage-actions{display:flex; justify-content:center; padding:2px 0 8px}
+  .ghost-btn{
+    font-family:var(--gothic); font-size:15px; padding:7px 22px; cursor:pointer;
+    background:var(--amber-soft); color:var(--ink);
+    border:1.5px solid var(--amber); border-radius:2px;
+  }
+  .ghost-btn:hover{background:var(--amber); color:#fff}
+  .ghost-btn[hidden]{display:none}
+
+  .controls{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  .card{background:var(--card); border:1.5px solid var(--line); border-radius:3px; padding:12px 14px}
+  .card h2{
+    font-size:14px; margin:0 0 10px; letter-spacing:.16em; color:var(--ink-soft); font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .swatch{width:12px; height:12px; border:1px solid var(--ink); display:inline-block}
+  .field{margin-bottom:10px}
+  .field label{display:flex; justify-content:space-between; align-items:baseline; font-size:14px; color:var(--ink-soft)}
+  .field output{font-family:var(--mono); font-size:19.5px; color:var(--ink)}
+  input[type=range]{
+    width:100%; margin:2px 0 0; height:36px; background:transparent;
+    -webkit-appearance:none; appearance:none; touch-action:pan-y;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:30px; height:30px; margin-top:-12px; border-radius:50%;
+    background:#1B6FA8; border:2.5px solid #fff; box-shadow:0 1px 4px rgba(22,50,79,.35);
+  }
+  input[type=range]::-moz-range-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-moz-range-thumb{width:26px; height:26px; border:2.5px solid #fff; border-radius:50%; background:#1B6FA8}
+  input[type=range]:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+
+  .tools{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  .tool-btn{
+    font-family:var(--gothic); font-size:14px; padding:6px 12px; cursor:pointer;
+    background:#fff; border:1.5px solid var(--line); border-radius:2px; color:var(--ink);
+  }
+  .tool-btn:hover{border-color:var(--ink)}
+
+  .result{
+    margin-top:14px; background:var(--ink); color:#fff;
+    border-radius:3px; padding:14px 16px;
+  }
+  .result .nums{display:flex; gap:26px; flex-wrap:wrap; margin-bottom:10px}
+  .result .nums div{display:flex; flex-direction:column}
+  .result .nums span{font-size:12.5px; letter-spacing:.14em; color:#9FBBD4}
+  .result .nums strong{font-family:var(--mono); font-size:30px; font-weight:600}
+  .result .nums strong em{font-style:normal; font-size:16px; margin-left:2px; color:#9FBBD4}
+  .formula{
+    font-family:var(--mono); font-size:14.5px; line-height:1.9;
+    border-top:1px solid #35577A; padding-top:9px; color:#D6E5F2; word-break:break-all;
+  }
+  @media (max-width:600px){
+    .controls{grid-template-columns:1fr}
+    .result .nums{gap:18px}
+    .result .nums strong{font-size:25.5px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <a class="back" href="./">← まなびラボ</a>
+  <header>
+    <h1>食塩水ラボ<span>SALT SOLUTION MIXER</span></h1>
+    <div class="modes">
+      <button class="mode-btn is-on" data-mode="area">面積図</button>
+      <button class="mode-btn" data-mode="balance">てんびん</button>
+    </div>
+  </header>
+
+  <section class="stage">
+    <svg id="beakers" viewBox="0 0 800 160" aria-label="ビーカーの図"></svg>
+    <svg id="figure" viewBox="0 0 800 360" aria-label="モデル図"></svg>
+    <div class="stage-actions">
+      <button id="levelBtn" class="ghost-btn">ならす</button>
+    </div>
+  </section>
+
+  <section class="controls">
+    <div class="card">
+      <h2><i class="swatch" id="swA"></i>食塩水 A</h2>
+      <div class="field">
+        <label for="mA">量 <output id="oMA"></output></label>
+        <input type="range" id="mA" min="0" max="500" step="10" value="100">
+      </div>
+      <div class="field">
+        <label for="cA">濃度 <output id="oCA"></output></label>
+        <input type="range" id="cA" min="0" max="30" step="1" value="5">
+      </div>
+    </div>
+    <div class="card">
+      <h2><i class="swatch" id="swB"></i>食塩水 B</h2>
+      <div class="field">
+        <label for="mB">量 <output id="oMB"></output></label>
+        <input type="range" id="mB" min="0" max="500" step="10" value="200">
+      </div>
+      <div class="field">
+        <label for="cB">濃度 <output id="oCB"></output></label>
+        <input type="range" id="cB" min="0" max="30" step="1" value="15">
+      </div>
+      <div class="tools">
+        <button class="tool-btn" id="waterBtn">B を水にする</button>
+        <button class="tool-btn" id="swapBtn">A と B を入れかえ</button>
+        <button class="tool-btn" id="resetBtn">はじめに戻す</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result">
+    <div class="nums">
+      <div><span>混合後の量</span><strong id="rM">–<em>g</em></strong></div>
+      <div><span>混合後の濃度</span><strong id="rC">–<em>%</em></strong></div>
+      <div><span>とけている食塩</span><strong id="rS">–<em>g</em></strong></div>
+    </div>
+    <div class="formula" id="formula"></div>
+  </section>
+
+  <footer id="ver"></footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const VERSION = "v1.0.0";
+  document.getElementById("ver").textContent = "食塩水ラボ " + VERSION;
+
+  var DEFAULTS = {mA:100, cA:5, mB:200, cB:15};
+  var st = {mode:"area", mA:100, cA:5, mB:200, cB:15, level:0};
+  var anim = null;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- 数値まわり ---------- */
+  function fmt(n){
+    var r = Math.round(n * 10) / 10;
+    return (Math.abs(r - Math.round(r)) < 1e-9) ? String(Math.round(r)) : r.toFixed(1);
+  }
+  function derived(){
+    var sA = st.mA * st.cA / 100,
+        sB = st.mB * st.cB / 100,
+        total = st.mA + st.mB,
+        salt = sA + sB;
+    return {sA:sA, sB:sB, total:total, salt:salt, cM: total > 0 ? salt / total * 100 : 0};
+  }
+  function concColor(c){
+    var t = Math.pow(Math.min(1, Math.max(0, c / 30)), 0.65);
+    var a = [226, 243, 252], b = [11, 75, 118], out = [];
+    for (var i = 0; i < 3; i++) out.push(Math.round(a[i] + (b[i] - a[i]) * t));
+    return "rgb(" + out.join(",") + ")";
+  }
+  function esc(s){ return String(s); }
+
+  /* ---------- ビーカー ---------- */
+  function beaker(x, mass, conc, label){
+    var W = 110, H = 108, base = 140, top = base - H;
+    var h = Math.min(1, mass / 520) * (H - 8);
+    var y = base - h;
+    var s = "";
+    s += '<path d="M' + x + ' ' + top + ' L' + x + ' ' + base + ' L' + (x + W) + ' ' + base + ' L' + (x + W) + ' ' + top + '" fill="none" stroke="#16324F" stroke-width="2.5" stroke-linejoin="round"/>';
+    if (h > 0.5) {
+      s += '<rect x="' + (x + 2) + '" y="' + y + '" width="' + (W - 4) + '" height="' + h + '" fill="' + concColor(conc) + '"/>';
+      s += '<line x1="' + (x + 2) + '" y1="' + y + '" x2="' + (x + W - 2) + '" y2="' + y + '" stroke="#16324F" stroke-width="1.5"/>';
+    }
+    for (var i = 1; i <= 4; i++) {
+      var gy = base - (H - 8) * i / 5;
+      s += '<line x1="' + x + '" y1="' + gy + '" x2="' + (x + 12) + '" y2="' + gy + '" stroke="#16324F" stroke-width="1" opacity=".45"/>';
+    }
+    s += '<text x="' + (x + W / 2) + '" y="' + (top - 22) + '" text-anchor="middle" font-size="15" font-family="sans-serif" fill="#5C7996" letter-spacing="2">' + label + '</text>';
+    s += '<text x="' + (x + W / 2) + '" y="' + (top - 4) + '" text-anchor="middle" font-size="17" font-family="monospace" fill="#16324F">' + fmt(mass) + 'g / ' + fmt(conc) + '%</text>';
+    return s;
+  }
+  function renderBeakers(){
+    var d = derived(), s = "";
+    s += beaker(70, st.mA, st.cA, "A");
+    s += beaker(240, st.mB, st.cB, "B");
+    s += '<text x="425" y="95" text-anchor="middle" font-size="34.5" fill="#5C7996">+</text>';
+    s += '<text x="500" y="95" text-anchor="middle" font-size="30" fill="#5C7996">=</text>';
+    s += beaker(570, d.total, d.cM, "混合後");
+    $("beakers").innerHTML = s;
+  }
+
+  /* ---------- 面積図 ---------- */
+  function renderArea(){
+    var d = derived();
+    var L = 66, R = 26, T = 44, B = 52, W = 800, H = 360;
+    var pw = W - L - R, ph = H - T - B, base = T + ph;
+    var s = "";
+
+    if (d.total <= 0) {
+      $("figure").innerHTML = '<text x="400" y="180" text-anchor="middle" font-size="17" fill="#5C7996">量を増やすと図が出ます</text>';
+      return;
+    }
+
+    var yMax = Math.max(st.cA, st.cB, d.cM, 4) * 1.18;
+    var sx = pw / d.total, sy = ph / yMax;
+    var lv = st.level;
+    var hA = (st.cA + (d.cM - st.cA) * lv) * sy;
+    var hB = (st.cB + (d.cM - st.cB) * lv) * sy;
+    var wA = st.mA * sx, wB = st.mB * sx;
+    var yM = base - d.cM * sy;
+
+    s += '<defs><pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">' +
+         '<line x1="0" y1="0" x2="0" y2="7" stroke="#E0982C" stroke-width="3"/></pattern></defs>';
+
+    // 軸
+    s += '<line x1="' + L + '" y1="' + base + '" x2="' + (W - R + 6) + '" y2="' + base + '" stroke="#16324F" stroke-width="2"/>';
+    s += '<line x1="' + L + '" y1="' + base + '" x2="' + L + '" y2="' + (T - 8) + '" stroke="#16324F" stroke-width="2"/>';
+    s += '<text x="' + (W - R + 6) + '" y="' + (base + 30) + '" text-anchor="end" font-size="14" fill="#5C7996">量 (g)　→ よこ</text>';
+    s += '<text x="' + (L - 46) + '" y="' + (T - 14) + '" font-size="14" fill="#5C7996">濃度 (%)</text>';
+    s += '<text x="' + (L - 46) + '" y="' + (T + 2) + '" font-size="14" fill="#5C7996">↑ たて</text>';
+
+    // はみ出し・へこみ（ならす前だけ）
+    if (lv < 0.02 && st.cA !== st.cB) {
+      var hi = st.cA > st.cB ? {x:L, w:wA, c:st.cA} : {x:L + wA, w:wB, c:st.cB};
+      var lo = st.cA > st.cB ? {x:L + wA, w:wB, c:st.cB} : {x:L, w:wA, c:st.cA};
+      s += '<rect x="' + hi.x + '" y="' + (base - hi.c * sy) + '" width="' + hi.w + '" height="' + ((hi.c - d.cM) * sy) + '" fill="url(#hatch)" opacity=".45"/>';
+      s += '<rect x="' + lo.x + '" y="' + yM + '" width="' + lo.w + '" height="' + ((d.cM - lo.c) * sy) + '" fill="url(#hatch)" opacity=".45"/>';
+      s += '<text x="' + (W / 2) + '" y="' + (T - 20) + '" text-anchor="middle" font-size="14.5" fill="#B87516">しゃ線の 2 か所は面積が同じ — ならすと平らになります</text>';
+    } else if (lv > 0.98) {
+      s += '<text x="' + (W / 2) + '" y="' + (T - 20) + '" text-anchor="middle" font-size="14.5" fill="#B87516">高さがそろっても、面積（食塩の量）の合計は変わりません</text>';
+    }
+
+    // 長方形 A / B
+    function box(x, w, h, mass, conc, salt, label){
+      if (w < 0.5) return "";
+      var y = base - h, t = "";
+      t += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + concColor(conc) + '" stroke="#16324F" stroke-width="2"/>';
+      if (w > 60 && h > 40) {
+        t += '<text x="' + (x + w / 2) + '" y="' + (y + h / 2 + 1) + '" text-anchor="middle" font-size="14" fill="#F7FAFC">食塩</text>';
+        t += '<text x="' + (x + w / 2) + '" y="' + (y + h / 2 + 19) + '" text-anchor="middle" font-size="18.5" font-family="monospace" fill="#FFFFFF">' + fmt(salt) + 'g</text>';
+      }
+      t += '<text x="' + (x + w / 2) + '" y="' + (base + 20) + '" text-anchor="middle" font-size="16" font-family="monospace" fill="#16324F">' + fmt(mass) + 'g</text>';
+      t += '<text x="' + (x + w / 2) + '" y="' + (base + 38) + '" text-anchor="middle" font-size="12.5" fill="#5C7996">' + label + '</text>';
+      if (h > 14) {
+        t += '<text x="' + (x + 6) + '" y="' + (y - 6) + '" font-size="15" font-family="monospace" fill="#16324F">' + fmt(conc) + '%</text>';
+      }
+      return t;
+    }
+    s += box(L, wA, hA, st.mA, st.cA + (d.cM - st.cA) * lv, d.sA, "A");
+    s += box(L + wA, wB, hB, st.mB, st.cB + (d.cM - st.cB) * lv, d.sB, "B");
+
+    // 混合後の高さ
+    s += '<line x1="' + (L - 10) + '" y1="' + yM + '" x2="' + (W - R + 6) + '" y2="' + yM + '" stroke="#E0982C" stroke-width="2.5" stroke-dasharray="8 5"/>';
+    s += '<rect x="' + (W - R - 78) + '" y="' + (yM - 26) + '" width="80" height="21" fill="#FBEED6" stroke="#E0982C" stroke-width="1.5"/>';
+    s += '<text x="' + (W - R - 38) + '" y="' + (yM - 11) + '" text-anchor="middle" font-size="15" font-family="monospace" fill="#B87516">' + fmt(d.cM) + '%</text>';
+
+    // 合計の幅
+    s += '<line x1="' + L + '" y1="' + (base + 46) + '" x2="' + (L + wA + wB) + '" y2="' + (base + 46) + '" stroke="#5C7996" stroke-width="1"/>';
+    s += '<text x="' + (L + (wA + wB) / 2) + '" y="' + (base + 43) + '" text-anchor="middle" font-size="12.5" fill="#5C7996">合計 ' + fmt(d.total) + 'g</text>';
+
+    $("figure").innerHTML = s;
+  }
+
+  /* ---------- てんびん ---------- */
+  function renderBalance(){
+    var d = derived();
+    var L = 70, R = 70, W = 800;
+    var beamY = 196, lineY = 292;
+    var s = "";
+
+    if (d.total <= 0) {
+      $("figure").innerHTML = '<text x="400" y="180" text-anchor="middle" font-size="17" fill="#5C7996">量を増やすと図が出ます</text>';
+      return;
+    }
+
+    var xMax = Math.max(st.cA, st.cB, 4) * 1.15;
+    var px = function(c){ return L + (W - L - R) * (c / xMax); };
+    var xA = px(st.cA), xB = px(st.cB), xM = px(d.cM);
+    var maxMass = Math.max(st.mA, st.mB, 1);
+
+    // 数直線
+    s += '<line x1="' + (L - 14) + '" y1="' + lineY + '" x2="' + (W - R + 14) + '" y2="' + lineY + '" stroke="#16324F" stroke-width="2"/>';
+    var step = xMax <= 6 ? 1 : (xMax <= 13 ? 2 : (xMax <= 33 ? 5 : 10));
+    for (var v = 0; v <= xMax; v += step) {
+      s += '<line x1="' + px(v) + '" y1="' + lineY + '" x2="' + px(v) + '" y2="' + (lineY + 7) + '" stroke="#16324F" stroke-width="1.5"/>';
+      s += '<text x="' + px(v) + '" y="' + (lineY + 24) + '" text-anchor="middle" font-size="12.5" font-family="monospace" fill="#5C7996">' + v + '</text>';
+    }
+    s += '<text x="' + (W - R + 20) + '" y="' + (lineY + 24) + '" font-size="12.5" fill="#5C7996">濃度(%)</text>';
+
+    // 支点までの距離
+    var lo = Math.min(xA, xB), hi = Math.max(xA, xB);
+    function arrow(x1, x2, y, txt){
+      if (Math.abs(x2 - x1) < 3) return "";
+      var t = '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="#E0982C" stroke-width="1.5"/>';
+      t += '<line x1="' + x1 + '" y1="' + (y - 5) + '" x2="' + x1 + '" y2="' + (y + 5) + '" stroke="#E0982C" stroke-width="1.5"/>';
+      t += '<line x1="' + x2 + '" y1="' + (y - 5) + '" x2="' + x2 + '" y2="' + (y + 5) + '" stroke="#E0982C" stroke-width="1.5"/>';
+      t += '<text x="' + ((x1 + x2) / 2) + '" y="' + (y - 9) + '" text-anchor="middle" font-size="14" font-family="monospace" fill="#B87516">' + txt + '</text>';
+      return t;
+    }
+    var dA = Math.abs(d.cM - st.cA), dB = Math.abs(st.cB - d.cM);
+    s += arrow(Math.min(xA, xM), Math.max(xA, xM), lineY - 22, fmt(dA));
+    s += arrow(Math.min(xB, xM), Math.max(xB, xM), lineY - 22, fmt(dB));
+
+    // 縦の目安線
+    [[xA, st.cA], [xB, st.cB]].forEach(function(p){
+      s += '<line x1="' + p[0] + '" y1="' + beamY + '" x2="' + p[0] + '" y2="' + lineY + '" stroke="#C6D6E3" stroke-width="1" stroke-dasharray="4 4"/>';
+    });
+    s += '<line x1="' + xM + '" y1="' + (beamY + 46) + '" x2="' + xM + '" y2="' + lineY + '" stroke="#E0982C" stroke-width="1.5" stroke-dasharray="4 4"/>';
+
+    // うで
+    s += '<rect x="' + (lo - 26) + '" y="' + beamY + '" width="' + (hi - lo + 52) + '" height="9" fill="#16324F" rx="2"/>';
+
+    // おもり
+    function weight(x, mass, conc, label){
+      if (mass <= 0) return "";
+      var w = 52, h = 16 + (mass / maxMass) * 74, y = beamY - h;
+      var t = '<rect x="' + (x - w / 2) + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + concColor(conc) + '" stroke="#16324F" stroke-width="2" rx="2"/>';
+      t += '<text x="' + x + '" y="' + (y - 20) + '" text-anchor="middle" font-size="12.5" fill="#5C7996">' + label + ' ' + fmt(conc) + '%</text>';
+      t += '<text x="' + x + '" y="' + (y - 5) + '" text-anchor="middle" font-size="17" font-family="monospace" fill="#16324F">' + fmt(mass) + 'g</text>';
+      return t;
+    }
+    s += weight(xA, st.mA, st.cA, "A");
+    s += weight(xB, st.mB, st.cB, "B");
+
+    // 支点
+    s += '<path d="M' + xM + ' ' + (beamY + 8) + ' L' + (xM - 21) + ' ' + (beamY + 46) + ' L' + (xM + 21) + ' ' + (beamY + 46) + ' Z" fill="#E0982C" stroke="#B87516" stroke-width="2" stroke-linejoin="round"/>';
+    s += '<text x="' + xM + '" y="' + (beamY + 68) + '" text-anchor="middle" font-size="15" font-family="monospace" fill="#B87516">' + fmt(d.cM) + '%</text>';
+    s += '<text x="' + xM + '" y="' + (beamY + 84) + '" text-anchor="middle" font-size="12.5" fill="#B87516">混合後</text>';
+
+    // 説明
+    var msg = "支点がつりあう位置＝混合後の濃度です";
+    if (dA > 0.05 && dB > 0.05) {
+      msg = "距離の比 " + fmt(dA) + " : " + fmt(dB) + " ／ 量の比 " + fmt(st.mA) + " : " + fmt(st.mB) + " — 逆になります";
+    }
+    s += '<text x="400" y="42" text-anchor="middle" font-size="15" fill="#B87516">' + msg + '</text>';
+    s += '<text x="400" y="62" text-anchor="middle" font-size="14" fill="#5C7996">量が多いほうに、混合後の濃度は近づきます</text>';
+
+    $("figure").innerHTML = s;
+  }
+
+  /* ---------- 結果 ---------- */
+  function renderResult(){
+    var d = derived();
+    $("rM").innerHTML = fmt(d.total) + '<em>g</em>';
+    $("rC").innerHTML = fmt(d.cM) + '<em>%</em>';
+    $("rS").innerHTML = fmt(d.salt) + '<em>g</em>';
+    var f = "";
+    f += "食塩 ＝ " + fmt(st.mA) + " × " + fmt(st.cA) + "%　＋　" + fmt(st.mB) + " × " + fmt(st.cB) + "%　＝ " + fmt(d.sA) + " ＋ " + fmt(d.sB) + " ＝ " + fmt(d.salt) + " g<br>";
+    f += "濃度 ＝ " + fmt(d.salt) + " ÷ " + fmt(d.total) + " × 100 ＝ " + fmt(d.cM) + " %";
+    $("formula").innerHTML = f;
+  }
+
+  /* ---------- 描画 ---------- */
+  function render(){
+    ["mA:oMA:g", "cA:oCA:%", "mB:oMB:g", "cB:oCB:%"].forEach(function(x){
+      var p = x.split(":");
+      $(p[0]).value = st[p[0]];
+      $(p[1]).textContent = fmt(st[p[0]]) + p[2];
+    });
+    $("swA").style.background = concColor(st.cA);
+    $("swB").style.background = concColor(st.cB);
+    renderBeakers();
+    if (st.mode === "area") renderArea(); else renderBalance();
+    renderResult();
+    $("levelBtn").hidden = (st.mode !== "area");
+    $("levelBtn").textContent = st.level > 0.5 ? "もどす" : "ならす";
+  }
+
+  function stopAnim(){ if (anim) { cancelAnimationFrame(anim); anim = null; } }
+  function tweenLevel(to){
+    stopAnim();
+    if (reduceMotion) { st.level = to; render(); return; }
+    var from = st.level, t0 = performance.now(), dur = 850;
+    (function tick(now){
+      var p = Math.min(1, (now - t0) / dur);
+      var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      st.level = from + (to - from) * e;
+      render();
+      if (p < 1) anim = requestAnimationFrame(tick); else anim = null;
+    })(t0);
+  }
+  function setVal(k, v){ stopAnim(); st[k] = v; st.level = 0; render(); }
+
+  /* ---------- イベント ---------- */
+  ["mA", "cA", "mB", "cB"].forEach(function(k){
+    $(k).addEventListener("input", function(){ setVal(k, Number(this.value)); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"), function(b){
+    b.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"), function(x){ x.classList.remove("is-on"); });
+      b.classList.add("is-on");
+      stopAnim(); st.mode = b.dataset.mode; st.level = 0; render();
+    });
+  });
+  $("levelBtn").addEventListener("click", function(){ tweenLevel(st.level > 0.5 ? 0 : 1); });
+  $("waterBtn").addEventListener("click", function(){ setVal("cB", 0); });
+  $("swapBtn").addEventListener("click", function(){
+    stopAnim();
+    var m = st.mA, c = st.cA;
+    st.mA = st.mB; st.cA = st.cB; st.mB = m; st.cB = c; st.level = 0; render();
+  });
+  $("resetBtn").addEventListener("click", function(){
+    stopAnim();
+    st.mA = DEFAULTS.mA; st.cA = DEFAULTS.cA; st.mB = DEFAULTS.mB; st.cB = DEFAULTS.cB; st.level = 0; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="歯車ラボ">
+<meta name="theme-color" content="#16324F">
+<title>歯車ラボ</title>
+<style>
+  :root{
+    --ink:#16324F;
+    --ink-soft:#5C7996;
+    --paper:#F7FAFC;
+    --grid:#DFE9F1;
+    --line:#C6D6E3;
+    --amber:#E0982C;
+    --amber-soft:#FBEED6;
+    --blue:#2F7BB0;
+    --blue-soft:#BCDDF0;
+    --card:#FFFFFF;
+    --mono: ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+    --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  button{touch-action:manipulation; min-height:44px}
+  body{
+    margin:0;
+    padding:16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    -webkit-tap-highlight-color:transparent;
+    font-family:var(--gothic);
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+  .app{max-width:860px; margin:0 auto}
+
+  .back{display:inline-block; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-bottom:8px}
+  .back:hover{color:var(--ink); text-decoration:underline}
+  header{margin-bottom:14px}
+  h1{font-size:25.5px; margin:0; letter-spacing:.08em; font-weight:700}
+  h1 span{display:block; font-family:var(--mono); font-size:11.5px; letter-spacing:.24em; color:var(--ink-soft); font-weight:400; margin-top:4px}
+  .lead{font-size:14px; color:var(--ink-soft); margin:8px 0 0; line-height:1.7}
+
+  .stage{background:var(--card); border:1.5px solid var(--ink); border-radius:3px; padding:8px}
+  svg{display:block; width:100%; height:auto}
+
+  .counts{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px}
+  .count{background:var(--card); border:1.5px solid var(--line); border-radius:3px; padding:8px 12px}
+  .count .nm{font-size:12.5px; color:var(--ink-soft); display:flex; align-items:center; gap:6px}
+  .count .vl{font-family:var(--mono); font-size:19px}
+  .swatch{width:12px; height:12px; border:1px solid var(--ink); display:inline-block}
+
+  .tools{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  .tool-btn{
+    font-family:var(--gothic); font-size:14px; padding:6px 12px; cursor:pointer;
+    background:#fff; border:1.5px solid var(--line); border-radius:2px; color:var(--ink);
+  }
+  .tool-btn:hover{border-color:var(--ink)}
+  .play-btn{
+    font-family:var(--gothic); font-size:15px; padding:6px 20px; cursor:pointer;
+    background:var(--amber-soft); color:var(--ink); border:1.5px solid var(--amber); border-radius:2px;
+  }
+  .play-btn:hover{background:var(--amber); color:#fff}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+
+  .controls{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:14px}
+  .card{background:var(--card); border:1.5px solid var(--line); border-radius:3px; padding:12px 14px}
+  .card h2{font-size:14px; margin:0 0 6px; letter-spacing:.16em; color:var(--ink-soft); font-weight:700; display:flex; align-items:center; gap:8px}
+  .field label{display:flex; justify-content:space-between; align-items:center; font-size:14px; color:var(--ink-soft)}
+  .numin{
+    width:68px; font-family:var(--mono); font-size:19px; text-align:right; color:var(--ink);
+    background:#fff; border:1.5px solid var(--line); border-radius:2px; padding:2px 6px;
+  }
+  .unit{font-size:12px; color:var(--ink-soft); margin-left:4px}
+  input[type=range]{
+    width:100%; margin:2px 0 0; height:36px; background:transparent;
+    -webkit-appearance:none; appearance:none; touch-action:pan-y;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:30px; height:30px; margin-top:-12px; border-radius:50%;
+    background:#1B6FA8; border:2.5px solid #fff; box-shadow:0 1px 4px rgba(22,50,79,.35);
+  }
+  input[type=range]::-moz-range-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-moz-range-thumb{width:26px; height:26px; border:2.5px solid #fff; border-radius:50%; background:#1B6FA8}
+  .range-ends{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft)}
+
+  .result{margin-top:14px; background:var(--ink); color:#fff; border-radius:3px; padding:14px 16px}
+  .result h2{font-size:12.5px; letter-spacing:.14em; color:#9FBBD4; margin:0 0 8px; font-weight:400}
+  .eq{font-family:var(--mono); font-size:14.5px; line-height:1.9; color:#D6E5F2; margin:0; word-break:break-all}
+  .eq.big{font-size:19px; color:#fff; font-weight:600}
+  .eq.big .hidden-val{color:var(--amber)}
+  .note{font-size:13px; color:#D6E5F2; line-height:1.75; margin:10px 0 0; border-top:1px solid #35577A; padding-top:9px}
+  .quiz{display:flex; align-items:center; gap:8px; font-size:13.5px; margin-top:10px; color:#D6E5F2; cursor:pointer}
+  .quiz input{width:18px; height:18px; accent-color:var(--amber)}
+
+  footer{margin-top:18px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono); text-align:right}
+
+  @media (max-width:600px){
+    .controls{grid-template-columns:1fr}
+    .count .vl{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <a class="back" href="./">← まなびラボ</a>
+  <header>
+    <h1>歯車ラボ<span>GEAR LAB</span></h1>
+    <p class="lead">歯数を変えると、回転数はどう変わる？ 紺色の歯を目印にして数えてみよう。</p>
+  </header>
+
+  <section class="stage">
+    <svg id="scene" viewBox="0 0 800 480" role="img" aria-label="かみ合う2つの歯車のアニメーション">
+      <g id="gA"></g>
+      <g id="gB"></g>
+      <g id="labels"></g>
+    </svg>
+  </section>
+
+  <section class="counts">
+    <div class="count">
+      <div class="nm"><i class="swatch" style="background:#BCDDF0"></i>A が回った数</div>
+      <div class="vl" id="cntA">0.0 回</div>
+    </div>
+    <div class="count">
+      <div class="nm"><i class="swatch" style="background:#E0982C"></i>B が回った数</div>
+      <div class="vl" id="cntB">0.0 回</div>
+    </div>
+    <div class="count">
+      <div class="nm">たった時間</div>
+      <div class="vl" id="cntT">0.0 秒</div>
+    </div>
+  </section>
+
+  <div class="tools">
+    <button class="play-btn" id="btnPlay">とめる</button>
+    <button class="tool-btn" id="btnReset">カウントを 0 に</button>
+    <button class="tool-btn" data-preset="24,24,20">同じ歯数</button>
+    <button class="tool-btn" data-preset="30,15,20">A が 2 倍</button>
+    <button class="tool-btn" data-preset="10,80,20">8 倍の差</button>
+  </div>
+
+  <section class="controls">
+    <div class="card">
+      <h2><i class="swatch" style="background:#BCDDF0"></i>歯車 A</h2>
+      <div class="field">
+        <label for="zA">歯数 <span><input class="numin" type="number" id="zAn" min="6" max="80" step="1" value="24"><span class="unit">枚</span></span></label>
+        <input type="range" id="zA" min="6" max="80" step="1" value="24">
+        <div class="range-ends"><span>6</span><span>80</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2><i class="swatch" style="background:#E0982C"></i>歯車 B</h2>
+      <div class="field">
+        <label for="zB">歯数 <span><input class="numin" type="number" id="zBn" min="6" max="80" step="1" value="12"><span class="unit">枚</span></span></label>
+        <input type="range" id="zB" min="6" max="80" step="1" value="12">
+        <div class="range-ends"><span>6</span><span>80</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>A の回転数</h2>
+      <div class="field">
+        <label for="nA">回転/分 <span><input class="numin" type="number" id="nAn" min="0" max="120" step="1" value="10"></span></label>
+        <input type="range" id="nA" min="0" max="120" step="1" value="10">
+        <div class="range-ends"><span>0</span><span>120</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="result">
+    <h2>計算のしかた</h2>
+    <p class="eq">かみ合う歯車は、動く歯の数が同じ → 歯数A × 回転数A ＝ 歯数B × 回転数B</p>
+    <p class="eq" id="eq1">24 × 10 ＝ 12 × □</p>
+    <p class="eq big" id="eq2">回転数B ＝ 24 × 10 ÷ 12 ＝ 20 回転/分</p>
+    <p class="note" id="note"></p>
+    <label class="quiz"><input type="checkbox" id="quiz"> 歯車 B の回転数をかくして考える（クイズモード）</label>
+  </section>
+
+  <footer id="ver"></footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const VERSION = "v1.0.0";
+  document.getElementById("ver").textContent = "歯車ラボ " + VERSION;
+
+  var INK = "#16324F", A_FILL = "#BCDDF0", B_FILL = "#E0982C", A_TXT = "#2F7BB0", B_TXT = "#B87516", SOFT = "#5C7996";
+  var svgNS = "http://www.w3.org/2000/svg";
+  var $ = function(id){ return document.getElementById(id); };
+  var gA = $("gA"), gB = $("gB"), labels = $("labels");
+  var zAEl = $("zA"), zBEl = $("zB"), nAEl = $("nA");
+  var zAn = $("zAn"), zBn = $("zBn"), nAn = $("nAn");
+  var cntA = $("cntA"), cntB = $("cntB"), cntT = $("cntT");
+  var eq1 = $("eq1"), eq2 = $("eq2"), note = $("note");
+  var btnPlay = $("btnPlay"), btnReset = $("btnReset"), quiz = $("quiz");
+
+  var CY = 200, CXW = 800;
+  var angA = 0, revA = 0, revB = 0, t = 0, playing = true, last = null;
+  var z1 = 24, z2 = 12, rpm = 10, layout = null;
+
+  function rad(d){ return d * Math.PI / 180; }
+  function P(r, a){ return [(r * Math.cos(rad(a))).toFixed(2), (r * Math.sin(rad(a))).toFixed(2)]; }
+
+  // 模式的な平歯車の輪郭。h は歯の高さ（小さい歯車に合わせて共通化し、必ずかみ合うようにする）
+  function gearPath(z, m, h, phase){
+    var rp = m * z / 2, ra = rp + 0.72 * h, rf = rp - 0.95 * h;
+    var p = 360 / z, tip = 0.12 * p, root = 0.33 * p, d = "";
+    for (var i = 0; i < z; i++) {
+      var a = phase + i * p;
+      var p1 = P(rf, a - root), p2 = P(ra, a - tip), p3 = P(ra, a + tip), p4 = P(rf, a + root), p5 = P(rf, a + p - root);
+      d += (i === 0 ? "M" : "L") + p1[0] + "," + p1[1];
+      d += "L" + p2[0] + "," + p2[1];
+      d += "A" + ra + "," + ra + " 0 0 1 " + p3[0] + "," + p3[1];
+      d += "L" + p4[0] + "," + p4[1];
+      d += "A" + rf + "," + rf + " 0 0 1 " + p5[0] + "," + p5[1];
+    }
+    return d + "Z";
+  }
+  function markPath(z, m, h, phase){
+    var rp = m * z / 2, ra = rp + 0.72 * h, rf = rp - 0.95 * h;
+    var p = 360 / z, tip = 0.12 * p, root = 0.33 * p;
+    var p1 = P(rf, phase - root), p2 = P(ra, phase - tip), p3 = P(ra, phase + tip), p4 = P(rf, phase + root);
+    return "M0,0L" + p1[0] + "," + p1[1] + "L" + p2[0] + "," + p2[1] + "L" + p3[0] + "," + p3[1] + "L" + p4[0] + "," + p4[1] + "Z";
+  }
+  function el(tag, attrs){ var e = document.createElementNS(svgNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  function build(){
+    var zmax = Math.max(z1, z2), zmin = Math.min(z1, z2);
+    var m = Math.min(740 / ((z1 + z2) / 2 + 1.8), 330 / (zmax + 2));
+    var h = m * Math.min(1, zmin / 10);
+    var rp1 = m * z1 / 2, rp2 = m * z2 / 2, cd = rp1 + rp2;
+    var x1 = CXW / 2 - cd / 2, x2 = CXW / 2 + cd / 2;
+    var phB = 180 + 180 / z2;              // Bの歯をずらしてAの歯とかみ合わせる
+    layout = {x1:x1, x2:x2};
+
+    gA.innerHTML = ""; gB.innerHTML = ""; labels.innerHTML = "";
+
+    function make(g, z, phase, fill){
+      g.appendChild(el("path", {d:gearPath(z, m, h, phase), fill:fill, stroke:INK, "stroke-width":"2", "stroke-linejoin":"round"}));
+      g.appendChild(el("path", {d:markPath(z, m, h, phase), fill:INK}));
+      var rp = m * z / 2;
+      g.appendChild(el("circle", {cx:0, cy:0, r:Math.max(rp * 0.2, 8), fill:"#fff", stroke:INK, "stroke-width":"2"}));
+      g.appendChild(el("circle", {cx:0, cy:0, r:rp, fill:"none", stroke:INK, "stroke-opacity":"0.3", "stroke-dasharray":"5 6"}));
+    }
+    make(gA, z1, 0, A_FILL);
+    make(gB, z2, phB, B_FILL);
+
+    var ly = Math.min(CY + Math.max(rp1, rp2) + h + 34, 436);
+    var nB = z2 ? rpm * z1 / z2 : 0;
+    function lab(x, name, teeth, speed, dir, color){
+      var t0 = el("text", {x:x, y:ly, "text-anchor":"middle", fill:INK, "font-size":"16", "font-weight":"700", "letter-spacing":"1"});
+      t0.textContent = name + " " + teeth + "枚"; labels.appendChild(t0);
+      var t1 = el("text", {x:x, y:ly + 22, "text-anchor":"middle", fill:color, "font-size":"19", "font-family":"monospace", "font-weight":"700"});
+      t1.textContent = speed + " 回転/分"; labels.appendChild(t1);
+      var t2 = el("text", {x:x, y:ly + 40, "text-anchor":"middle", fill:SOFT, "font-size":"13"});
+      t2.textContent = dir; labels.appendChild(t2);
+    }
+    var moving = rpm > 0 && playing;
+    lab(x1, "歯車A", z1, String(rpm), moving ? "右まわり" : "止まっている", A_TXT);
+    lab(x2, "歯車B", z2, quiz.checked ? "？？" : fmt(nB), moving ? "左まわり" : "止まっている", B_TXT);
+    place();
+  }
+
+  function place(){
+    var angB = -angA * z1 / z2;
+    gA.setAttribute("transform", "translate(" + layout.x1 + "," + CY + ") rotate(" + angA + ")");
+    gB.setAttribute("transform", "translate(" + layout.x2 + "," + CY + ") rotate(" + angB + ")");
+  }
+  function ratio(a, b){ function g(x, y){ return y ? g(y, x % y) : x; } var d = g(a, b); return (a / d) + ":" + (b / d); }
+  function fmt(x){ return Number.isInteger(x) ? String(x) : String(Math.round(x * 100) / 100); }
+
+  function texts(){
+    var nB = z2 ? rpm * z1 / z2 : 0, hide = quiz.checked;
+    eq1.textContent = z1 + " × " + rpm + " ＝ " + z2 + " × □";
+    eq2.innerHTML = hide
+      ? "回転数B ＝ " + z1 + " × " + rpm + " ÷ " + z2 + ' ＝ <span class="hidden-val">？？</span> 回転/分'
+      : "回転数B ＝ " + z1 + " × " + rpm + " ÷ " + z2 + " ＝ " + fmt(nB) + " 回転/分";
+    note.textContent = "歯数の比 A:B ＝ " + ratio(z1, z2) + "　／　回転数の比 A:B ＝ " + ratio(z2, z1)
+      + "（歯数の比と逆）。かみ合う 2 つの歯車は、回る向きも逆になります。";
+  }
+  function counters(){
+    cntA.textContent = revA.toFixed(1) + " 回";
+    cntB.textContent = quiz.checked ? "？？ 回" : revB.toFixed(1) + " 回";
+    cntT.textContent = t.toFixed(1) + " 秒";
+  }
+
+  function loop(ts){
+    if (last === null) last = ts;
+    var dt = Math.min((ts - last) / 1000, 0.1); last = ts;
+    if (playing && rpm > 0) {
+      var dRev = rpm * dt / 60;
+      angA += dRev * 360; revA += dRev; revB += dRev * z1 / z2; t += dt;
+      place(); counters();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function clamp(v, lo, hi){ v = Math.round(v); if (isNaN(v)) v = lo; return Math.max(lo, Math.min(hi, v)); }
+  function sync(){
+    z1 = clamp(+zAEl.value, 6, 80); z2 = clamp(+zBEl.value, 6, 80); rpm = clamp(+nAEl.value, 0, 120);
+    zAEl.value = z1; zBEl.value = z2; nAEl.value = rpm;
+    if (document.activeElement !== zAn) zAn.value = z1;
+    if (document.activeElement !== zBn) zBn.value = z2;
+    if (document.activeElement !== nAn) nAn.value = rpm;
+    texts(); build();
+  }
+  [zAEl, zBEl, nAEl].forEach(function(e){ e.addEventListener("input", sync); });
+  function bindNum(numEl, rangeEl){
+    numEl.addEventListener("input", function(){ if (numEl.value === "" || numEl.value === "-") return; rangeEl.value = numEl.value; sync(); });
+    numEl.addEventListener("blur", function(){ sync(); });
+  }
+  bindNum(zAn, zAEl); bindNum(zBn, zBEl); bindNum(nAn, nAEl);
+  quiz.addEventListener("change", function(){ texts(); counters(); build(); });
+
+  btnPlay.addEventListener("click", function(){ playing = !playing; btnPlay.textContent = playing ? "とめる" : "うごかす"; build(); });
+  btnReset.addEventListener("click", function(){ angA = 0; revA = 0; revB = 0; t = 0; place(); counters(); });
+  document.querySelectorAll("[data-preset]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var v = b.dataset.preset.split(",");
+      zAEl.value = v[0]; zBEl.value = v[1]; nAEl.value = v[2];
+      angA = 0; revA = 0; revB = 0; t = 0; sync(); counters();
+    });
+  });
+
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { playing = false; btnPlay.textContent = "うごかす"; }
+  sync(); counters(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

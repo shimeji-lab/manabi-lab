@@ -104,9 +104,9 @@
        tag   : 分類（フィルタのボタンも自動で増えます）
        desc  : ひとこと説明
        url   : リンク先。"" にすると「準備中」表示になります
-       glyph : 図の種類（lens / moon / wave / salt / gear / dot）
+       glyph : 図の種類（lens / moon / func / wave / salt / gear / dot）
      ============================================================ */
-  const VERSION = "v1.2.0";
+  const VERSION = "v1.3.0";
 
   var TOOLS = [
     {
@@ -122,6 +122,13 @@
       desc: "太陽・地球・月を 3D で動かして、月の形が変わって見えるしくみを確かめます。（試作版）",
       url: "https://shimeji-lab.github.io/moon-lab/",
       glyph: "moon"
+    },
+    {
+      title: "関数LAB",
+      tag: "数学",
+      desc: "水そうに水を入れる時間を動かして、水面・表・式・グラフが同じきまりで動くことを確かめます。（試作版）",
+      url: "https://shimeji-lab.github.io/function-lab/",
+      glyph: "func"
     },
     {
       title: "Wave Lab",
@@ -179,6 +186,13 @@
       '<path d="M32 11a21 21 0 0 1 0 42a11 21 0 0 0 0-42z" fill="#FBEED6"/>' +
       '<circle cx="32" cy="32" r="21" stroke="#16324F" stroke-width="2.5"/>' +
       '<path d="M2 32h7M4 24l6 3M4 40l6-3" stroke="#E0982C" stroke-width="2.2" stroke-linecap="round"/></svg>',
+
+    func: '<svg viewBox="0 0 64 64" fill="none">' +
+      '<path d="M8 6v52h52" stroke="#16324F" stroke-width="2.5"/>' +
+      '<path d="M8 22h50M8 38h50M24 6v52M40 6v52" stroke="#16324F" stroke-width="1" opacity=".18"/>' +
+      '<line x1="8" y1="46" x2="54" y2="12" stroke="#E0982C" stroke-width="3" stroke-linecap="round"/>' +
+      '<line x1="36" y1="25" x2="36" y2="58" stroke="#2F7BB0" stroke-width="2" stroke-dasharray="3 3"/>' +
+      '<circle cx="36" cy="25.3" r="5" fill="#BCDDF0" stroke="#16324F" stroke-width="2.5"/></svg>',
 
     dot: '<svg viewBox="0 0 64 64" fill="none">' +
       '<circle cx="32" cy="32" r="20" fill="#BCDDF0" stroke="#16324F" stroke-width="2.5"/>' +
